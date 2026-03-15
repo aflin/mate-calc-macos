@@ -1,64 +1,55 @@
-# MATE Calculator
+# MATE Calculator for macOS
 
 ![mate-calc-icon](mate-calc.png)
 
-## General Information
+A port of [MATE Calculator](https://github.com/mate-desktop/mate-calc) to macOS. MATE Calculator is a powerful graphical calculator with basic, advanced, financial, and programming modes, using GNU MPFR and GNU MPC for arbitrary-precision arithmetic.
 
-MATE Calculator (*mate-calc*) started as a fork of *gnome-calc*, the calculator application
-that was previously in the OpenWindows Deskset of the Solaris 8
-operating system.
+It originates from *calctool*, written for Sun's OpenWindows DeskSet in the late 1980s, which later became *gnome-calc* in GNOME 2, and then *mate-calc* when the MATE desktop forked from GNOME 2. This fork adds macOS support: Cmd key shortcuts, a self-contained .app bundle with all dependencies included, and a DMG installer.
 
-## Calctool history
+## Prerequisites
 
-Calctool was a project I worked on before I joined the OpenWindows
-DeskSet engineering group at Sun. It was originally released to
-comp.sources.unix in the late 1980's, and worked with many different
-graphics packages including SunView, X11, Xview, NeWS and MGR. There
-was also a version that worked on dumb tty terminals.
-
-It used a double-precision maths library that was a combination of the
-work of Fred Fish and various routines that were in the BSD 4.3 maths
-library.
-
-A lot of people in the community provided feedback in the form of
-comments, bug reports and fixes. In 1990, I started working in the
-DeskSet engineering group. I was working for Sun Microsystems in
-Australia at the time, (having moved there from England in 1983).
-
-I searched around looking for multiple precision maths libraries and
-found a package called MP written in FORTRAN by Richard Brent. I
-converted it to C, adjusted the glue between the resultant code and the
-calctool code, and this went on to be the basis of the calculator that
-was in the OpenWindows DeskSet. I also added scientific, financial and
-logical modes. This calctool was also the basis of the dtcalc
-application that is a part of CDE (albeit I had nothing to do with
-that).
-
-With its inclusion in the MATE CVS repository, it was renamed to
-*mate-calc*.
-
-More recently, Sami Pietila provided arithmetic precedence support and
-Robert Ancell converted the UI to use Glade.
-
-## Build/Installation
-
-MATE Calculator requires GTK+ (>= 3.22) and the [GNU MPFR](https://www.mpfr.org/) and [GNU MPC](http://www.multiprecision.org/mpc) libraries. For a complete list of dependencies see the [build.yml](https://github.com/mate-desktop/mate-calc/blob/master/.build.yml).
-
-Simple install procedure:
+Install the build dependencies via [Homebrew](https://brew.sh):
 
 ```
-$ ./autogen.sh                              # Build configuration
-$ make                                      # Build
-[ Become root if necessary ]
-$ make install                              # Installation
+brew install gtk+3 mpfr libmpc meson itstool pkgconf
 ```
 
+## Building
+
+```
+./build.sh          # show usage
+./build.sh compile  # compile only
+./build.sh light    # compile + lightweight .app (uses Homebrew libs at runtime)
+./build.sh dist     # compile + self-contained .app + DMG (for distribution)
+./build.sh all      # same as dist
+./build.sh clean    # remove all build artifacts
+```
+
+The `compile` target produces two binaries in `build/src/`:
+
+- `mate-calc` — the GUI calculator
+- `mate-calc-cmd` — a command-line calculator
+
+The `light` and `dist` targets place the `.app` (and DMG for `dist`) in `build/`.
+
+The **lightweight** bundle (~1 MB) requires Homebrew with gtk+3 on the target machine. The **dist** bundle (~9 MB DMG) is self-contained with all dylibs included, ad-hoc signed, and portable to any arm64 Mac running macOS 11+.
+
+Recipients of the DMG may need to right-click and select Open on first launch to bypass Gatekeeper since the app is not notarized.
+
+## Changes from upstream
+
+- `meson.build` — added Homebrew include/library paths for MPFR and MPC
+- `src/mp.h` — added `typedef unsigned long ulong` for macOS (Linux defines this in `sys/types.h`)
+- `src/math-window.c`, `src/math-display.c` — keyboard shortcuts use Cmd instead of Ctrl on macOS
+- `src/math-buttons.c` — button tooltips show the correct modifier key per platform
+- `src/math-display.c` — quoted CSS `font-family` value to fix a GTK theme parsing warning; use system font with full Unicode coverage on macOS
+- `build.sh` — top-level build script with compile, light, dist, and clean targets
+- `create-macos-bundle.sh` — builds the .app bundle and DMG
 
 ## Acknowledgements
 
-See the [AUTHORS](https://github.com/mate-desktop/mate-calc/blob/master/AUTHORS) file.
+See the upstream [AUTHORS](https://github.com/mate-desktop/mate-calc/blob/master/AUTHORS) file for the full list of contributors.
 
-Suggestions for further improvement would be most welcome, plus bug
-reports and comments.
+## License
 
-The Mate Team.
+GPL-2.0-or-later. See the upstream [MATE Calculator](https://github.com/mate-desktop/mate-calc) repository for full license text.

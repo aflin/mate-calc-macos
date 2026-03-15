@@ -32,6 +32,12 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
+/* ulong is defined in sys/types.h on Linux but not on macOS */
+#ifndef __linux__
+typedef unsigned long ulong;
+#endif
+
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <mpfr.h>

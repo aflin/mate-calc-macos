@@ -25,15 +25,18 @@ gtk = dependency('gtk+-3.0', version : '>=3.22')
 
 # Libraries
 cc = meson.get_compiler('c')
+homebrew_inc = include_directories('/opt/homebrew/include')
 mpc = declare_dependency(
   dependencies: [
-    cc.find_library('mpc'),
-  ]
+    cc.find_library('mpc', dirs: ['/opt/homebrew/lib']),
+  ],
+  include_directories: homebrew_inc,
 )
 mpfr = declare_dependency(
   dependencies: [
-    cc.find_library('mpfr'),
-  ]
+    cc.find_library('mpfr', dirs: ['/opt/homebrew/lib']),
+  ],
+  include_directories: homebrew_inc,
 )
 conf = configuration_data()
 

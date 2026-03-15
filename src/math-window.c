@@ -21,6 +21,13 @@
 #include "math-history.h"
 #include "utility.h"
 
+/* On macOS, use Cmd (Meta) instead of Ctrl for shortcuts */
+#ifdef __APPLE__
+#define PRIMARY_MODIFIER GDK_META_MASK
+#else
+#define PRIMARY_MODIFIER PRIMARY_MODIFIER
+#endif
+
 // gtk3 hack
 	#ifndef GDK_KEY_F1
 		#define GDK_KEY_F1 GDK_F1
@@ -226,7 +233,7 @@ key_press_cb(MathWindow *window, GdkEventKey *event)
         }
         return TRUE;
     }
-    else if (math_buttons_get_mode (window->priv->buttons) == PROGRAMMING && (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK) {
+    else if (math_buttons_get_mode (window->priv->buttons) == PROGRAMMING && (event->state & PRIMARY_MODIFIER) == PRIMARY_MODIFIER) {
         switch(event->keyval)
         {
         /* Binary */
@@ -542,21 +549,21 @@ static void create_menu(MathWindow* window)
 
     menu = add_menu(window->priv->menu_bar, CALCULATOR_MENU_LABEL);
     menu_item = add_menu_item(menu, gtk_image_menu_item_new_from_icon("edit-copy",_("_Copy"), accel_group), G_CALLBACK(copy_cb), window);
-    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_C, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_C, PRIMARY_MODIFIER, GTK_ACCEL_VISIBLE);
     menu_item = add_menu_item(menu, gtk_image_menu_item_new_from_icon("edit-paste",_("_Paste"), accel_group), G_CALLBACK(paste_cb), window);
-    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_V, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_V, PRIMARY_MODIFIER, GTK_ACCEL_VISIBLE);
     menu_item = add_menu_item(menu, gtk_image_menu_item_new_from_icon("edit-undo",_("_Undo"), accel_group), G_CALLBACK(undo_cb), window);
-    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_Z, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_Z, PRIMARY_MODIFIER, GTK_ACCEL_VISIBLE);
     menu_item = add_menu_item(menu, gtk_image_menu_item_new_from_icon("edit-redo",_("_Redo"), accel_group), G_CALLBACK(redo_cb), window);
-    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_Z, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_Z, PRIMARY_MODIFIER | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
     menu_item = add_menu_item(menu, gtk_image_menu_item_new_from_icon("edit-clear",_("_Clear History"), accel_group), G_CALLBACK(clear_history_cb), window);
-    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_Delete, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_Delete, PRIMARY_MODIFIER | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
     add_menu_item(menu, gtk_separator_menu_item_new(), NULL, NULL);
     add_menu_item(menu, gtk_image_menu_item_new_from_icon("preferences-desktop",_("_Preferences"), accel_group), G_CALLBACK(show_preferences_cb), window);
     add_menu_item(menu, gtk_separator_menu_item_new(), NULL, NULL);
     menu_item = add_menu_item(menu, gtk_image_menu_item_new_from_icon("application-exit",_("_Quit"), accel_group), G_CALLBACK(quit_cb), window);
-    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_Q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_W, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_Q, PRIMARY_MODIFIER, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, GDK_KEY_W, PRIMARY_MODIFIER, GTK_ACCEL_VISIBLE);
 
     menu = add_menu(window->priv->menu_bar, MODE_MENU_LABEL);
     window->priv->mode_basic_menu_item = add_menu_item(menu, radio_menu_item_new(&group, MODE_BASIC_LABEL), G_CALLBACK(mode_changed_cb), window);
@@ -570,7 +577,7 @@ static void create_menu(MathWindow* window)
 
     menu = add_menu(window->priv->menu_bar, VIEW_MENU_LABEL);
     window->priv->view_history_menu_item = add_menu_item(menu, gtk_check_menu_item_new_with_mnemonic(VIEW_HISTORY_LABEL), G_CALLBACK(history_check_toggled_cb), window);
-    gtk_widget_add_accelerator(window->priv->view_history_menu_item, "activate", accel_group, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(window->priv->view_history_menu_item, "activate", accel_group, GDK_KEY_H, PRIMARY_MODIFIER | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
 
     menu = add_menu(window->priv->menu_bar, HELP_MENU_LABEL);
     menu_item = add_menu_item(menu, gtk_image_menu_item_new_from_icon("help-browser", HELP_CONTENTS_LABEL, accel_group), G_CALLBACK(help_cb), window);

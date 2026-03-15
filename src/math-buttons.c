@@ -17,6 +17,12 @@
 #include "mp-serializer.h"
 #include "utility.h"
 
+#ifdef __APPLE__
+#define MODIFIER_KEY_LABEL "\xe2\x8c\x98" /* ⌘ in UTF-8 */
+#else
+#define MODIFIER_KEY_LABEL "Ctrl"
+#endif
+
 enum {
     PROP_0,
     PROP_EQUATION,
@@ -541,7 +547,35 @@ load_mode(MathButtons *buttons, ButtonMode mode)
             g_object_set_data(object, "calc_text", (gpointer) button_data[i].data);
 
         if (button_data[i].tooltip)
+        {
+#ifdef __APPLE__
+            /* Replace "Ctrl" with "⌘" in tooltips for macOS */
+            gchar *translated = g_strdup(_(button_data[i].tooltip));
+            gchar *replaced = NULL;
+            if (g_strstr_len(translated, -1, "Ctrl") != NULL)
+            {
+                replaced = g_strdup(translated);
+                gchar *pos;
+                while ((pos = g_strstr_len(replaced, -1, "Ctrl")) != NULL)
+                {
+                    gsize prefix_len = pos - replaced;
+                    gchar *new_str = g_strdup_printf("%.*s%s%s",
+                        (int)prefix_len, replaced, MODIFIER_KEY_LABEL, pos + 4);
+                    g_free(replaced);
+                    replaced = new_str;
+                }
+                gtk_widget_set_tooltip_text(button, replaced);
+                g_free(replaced);
+            }
+            else
+            {
+                gtk_widget_set_tooltip_text(button, translated);
+            }
+            g_free(translated);
+#else
             gtk_widget_set_tooltip_text(button, _(button_data[i].tooltip));
+#endif
+        }
     }
 
     /* Set special button data */

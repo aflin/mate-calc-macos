@@ -14,6 +14,13 @@
 
 #include "math-display.h"
 
+/* On macOS, use Cmd (Meta) instead of Ctrl for shortcuts */
+#ifdef __APPLE__
+#define PRIMARY_MODIFIER GDK_META_MASK
+#else
+#define PRIMARY_MODIFIER PRIMARY_MODIFIER
+#endif
+
 enum {
     PROP_0,
     PROP_EQUATION
@@ -110,7 +117,7 @@ display_key_press_cb(GtkWidget *widget, GdkEventKey *event, MathDisplay *display
         return result;
     }
 
-    state = event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK);
+    state = event->state & (PRIMARY_MODIFIER | GDK_MOD1_MASK);
     c = gdk_keyval_to_unicode(event->keyval);
 
     /* Solve on enter */
@@ -121,7 +128,7 @@ display_key_press_cb(GtkWidget *widget, GdkEventKey *event, MathDisplay *display
 
     /* Clear on escape */
     if ((event->keyval == GDK_KEY_Escape && state == 0) ||
-        (event->keyval == GDK_KEY_BackSpace && state == GDK_CONTROL_MASK) ||
+        (event->keyval == GDK_KEY_BackSpace && state == PRIMARY_MODIFIER) ||
         (event->keyval == GDK_KEY_Delete && state == GDK_SHIFT_MASK)) {
         math_equation_clear(display->priv->equation);
         return TRUE;
@@ -150,7 +157,7 @@ display_key_press_cb(GtkWidget *widget, GdkEventKey *event, MathDisplay *display
     }
 
     /* Shortcuts */
-    if (state == GDK_CONTROL_MASK) {
+    if (state == PRIMARY_MODIFIER) {
         switch(event->keyval)
         {
         case GDK_KEY_bracketleft:
@@ -197,7 +204,7 @@ display_key_press_cb(GtkWidget *widget, GdkEventKey *event, MathDisplay *display
         }
     }
 
-    if (state == GDK_CONTROL_MASK || math_equation_get_number_mode(display->priv->equation) == SUPERSCRIPT) {
+    if (state == PRIMARY_MODIFIER || math_equation_get_number_mode(display->priv->equation) == SUPERSCRIPT) {
         switch(event->keyval)
         {
         case GDK_KEY_0:
@@ -325,7 +332,7 @@ static void _text_view_override_font (GtkWidget *widget, PangoFontDescription *f
     gchar          *size;
     const gchar    *style;
 
-    family = g_strdup_printf ("font-family: %s;", pango_font_description_get_family (font));
+    family = g_strdup_printf ("font-family: \"%s\";", pango_font_description_get_family (font));
     weight = g_strdup_printf ("font-weight: %d;", pango_font_description_get_weight (font));
     if (pango_font_description_get_style (font) == PANGO_STYLE_NORMAL)
         style = "font-style: normal;";
@@ -376,6 +383,11 @@ create_gui(MathDisplay *display)
     context = gtk_widget_get_style_context (display->priv->text_view);
     state = gtk_widget_get_state_flags (GTK_WIDGET (display->priv->text_view));
     gtk_style_context_get (context, state, GTK_STYLE_PROPERTY_FONT, &font_desc, NULL);
+#ifdef __APPLE__
+    /* The default GTK font on macOS may lack Unicode math/logic glyphs.
+       Use the system UI font which has full coverage. */
+    pango_font_description_set_family(font_desc, "SF Pro, Helvetica Neue, sans-serif");
+#endif
     pango_font_description_set_size(font_desc, 16 * PANGO_SCALE);
     _text_view_override_font (display->priv->text_view, font_desc);
     pango_font_description_free(font_desc);
