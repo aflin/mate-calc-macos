@@ -1,0 +1,4 @@
+build/
+.cache/
+MATE Calculator.app/
+MATE-Calculator-*.dmg
